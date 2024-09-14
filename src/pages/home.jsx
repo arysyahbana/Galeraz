@@ -144,6 +144,7 @@ const HomePage = () => {
                 <Nav />
 
                 <motion.h1 variants={cardVariants} transition={{duration: 1, delay: 0.3, type: "spring", stiffness: 100}} whileInView={"visible"} initial="hidden" viewport={{once: false, amount: 0.5}} className="text-5xl font-bold text-center mt-24 mb-0">Galeraz</motion.h1>
+                {/* <p>My Secret key : {import.meta.env.VITE_KEY}</p> */}
                 <motion.p transition={{duration: 1, delay: 0.3, type: "spring", stiffness: 100}} whileInView={{ opacity: 1, y: 0 }} initial={{ opacity: 0, y: -100 }} viewport={{once: false, amount: 0.5}} className="text-center text-lg">Home</motion.p>
                 <form className="max-w-md md:max-w-xl lg:max-w-3xl mx-auto mt-12">   
                     <label htmlFor="default-search" className="mb-2 text-sm font-medium text-gray-900 sr-only">Cari</label>
