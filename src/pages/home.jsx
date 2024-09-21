@@ -84,6 +84,7 @@ const HomePage = () => {
       sessionStorage.removeItem("uploadSuccess");
     }
   },[])
+
   const cardVariants = {
     hidden: { opacity: 0, y: 100 },
     visible: { opacity: 1, y: 0 },
@@ -92,6 +93,21 @@ const HomePage = () => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemPerPage = 4;
+
+  // State untuk pencarian
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const handlePageChange = (page) => {
+  setCurrentPage(page);
+};
+
+
+  const indexOfLastItem = currentPage * itemPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemPerPage;
+  const currentPosts = posts.slice(indexOfFirstItem, indexOfLastItem);
 
   useEffect(() => {
   // Mengambil token dari localStorage
@@ -121,6 +137,19 @@ const HomePage = () => {
       });
     }, []);
 
+     // Fungsi untuk menangani input pencarian
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+  };
+
+  // Fungsi untuk menangani submit form pencarian
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    const filteredPosts = posts.filter((post) =>
+      post.title.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    setPosts(filteredPosts);
+  };
 
     if (loading) {
       return (
@@ -146,7 +175,7 @@ const HomePage = () => {
                 <motion.h1 variants={cardVariants} transition={{duration: 1, delay: 0.3, type: "spring", stiffness: 100}} whileInView={"visible"} initial="hidden" viewport={{once: false, amount: 0.5}} className="text-5xl font-bold text-center mt-24 mb-0">Galeraz</motion.h1>
                 {/* <p>My Secret key : {import.meta.env.VITE_KEY}</p> */}
                 <motion.p transition={{duration: 1, delay: 0.3, type: "spring", stiffness: 100}} whileInView={{ opacity: 1, y: 0 }} initial={{ opacity: 0, y: -100 }} viewport={{once: false, amount: 0.5}} className="text-center text-lg">Home</motion.p>
-                <form className="max-w-md md:max-w-xl lg:max-w-3xl mx-auto mt-12">   
+                <form className="max-w-md md:max-w-xl lg:max-w-3xl mx-auto mt-12"  onSubmit={handleSearchSubmit}>   
                     <label htmlFor="default-search" className="mb-2 text-sm font-medium text-gray-900 sr-only">Cari</label>
                     <div className="relative">
                         <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
@@ -154,7 +183,7 @@ const HomePage = () => {
                                 <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
                             </svg>
                         </div>
-                        <input type="search" id="default-search" className="block w-full p-4 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500" placeholder="Cari Foto" required />
+                        <input type="search" id="default-search" value={searchQuery} onChange={handleSearchChange} className="block w-full p-4 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500" placeholder="Cari Foto" required />
                         <button type="submit" className="text-white absolute end-2.5 bottom-2.5 bg-sky-500 hover:bg-sky-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2">Search</button>
                     </div>
                 </form>
@@ -162,8 +191,8 @@ const HomePage = () => {
 
             <div className="container mx-auto mt-12">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {posts.length > 0 ? (
-                  posts.map((item, index) => (
+                {currentPosts.length > 0 ? (
+                  currentPosts.map((item, index) => (
                     <motion.div
                       key={item.id}
                       variants={cardVariants}
@@ -215,10 +244,71 @@ const HomePage = () => {
                 ) : (
                   <p>No posts found.</p>
                 )}
+                {/* {posts.length > 0 ? (
+                  posts.map((item, index) => (
+                    <motion.div
+                      key={item.id}
+                      variants={cardVariants}
+                      transition={{ duration: 1, delay: index * 0.3, type: "spring", stiffness: 100 }}
+                      whileInView={"visible"}
+                      initial="hidden"
+                      viewport={{ once: false, amount: 0.5 }}
+                    >
+                      <Card shadow="sm" isPressable onPress={() => console.log("item pressed")} className="w-full">
+                        <CardBody as={Link} to={`/detail/${item.id}`} className="overflow-visible p-0">
+                          <Image
+                            shadow="sm"
+                            radius="lg"
+                            width="100%"
+                            height={250}
+                            alt={item.title}
+                            className="w-full object-cover h-full"
+                            src={item.imageUrl}
+                            loading="lazy"
+                          />
+                        </CardBody>
+                        <CardFooter className="text-small pt-2 pb-5 px-5 flex-col items-start">
+                          <p className="flex gap-1">
+                            <span className="pt-1">
+                              <FaRegUserCircle />
+                            </span>
+                            <span>{item.user.name}</span>
+                          </p>
+                          <b className="mt-2 text-xl">{item.title}</b>
+                          <p className="text-default-500 text-start">{item.description ? item.description.substring(0, 50) : "No description available"}...</p>
+                          <div className="flex justify-end gap-3 w-full">
+                            <div className="flex gap-1">
+                              <span className="pt-1">
+                                <FaRegCommentDots />
+                              </span>
+                              <span>{item.comment ?? "0"}</span>
+                            </div>
+                            <div className="flex gap-1">
+                              <span className="pt-1">
+                                <BiLike />
+                              </span>
+                              <span>{item.likeCount}</span>
+                            </div>
+                          </div>
+                        </CardFooter>
+                      </Card>
+                    </motion.div>
+                  ))
+                ) : (
+                  <p>No posts found.</p>
+                )} */}
               </div>
 
               <div className="flex flex-wrap gap-4 items-center justify-center mt-12">
-                  <Pagination total={10} initialPage={1} color="secondary" />
+                  {/* <Pagination total={10} initialPage={1} color="secondary" /> */}
+                  <Pagination
+                    total={Math.ceil(posts.length / itemPerPage)} // Total halaman
+                    initialPage={1}
+                    page={currentPage}
+                    onChange={handlePageChange}
+                    color="secondary"
+                  />
+
               </div>
             </div>
         </div>
